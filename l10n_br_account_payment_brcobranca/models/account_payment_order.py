@@ -148,8 +148,8 @@ class PaymentOrder(models.Model):
 
         remessa_values = {
             "carteira": str(cnab_config.boleto_wallet),
-            "agencia": bank_account_id.bra_number,
-            "conta_corrente": int(misc.punctuation_rm(bank_account_id.acc_number)),
+            "agencia": str(bank_account_id.bra_number),
+            "conta_corrente": str(misc.punctuation_rm(bank_account_id.acc_number)),
             "digito_conta": bank_account_id.acc_number_dig[0],
             "empresa_mae": bank_account_id.partner_id.legal_name[:30],
             "documento_cedente": misc.punctuation_rm(
@@ -198,7 +198,7 @@ class PaymentOrder(models.Model):
             timeout=TIMEOUT,
         )
 
-        if cnab_type == "240" and "R01" in res.text[242:254]:
+        if cnab_type == "240" and "R0" in res.text[242:254]:
             #  Todos os header de lote cnab 240 tem conteúdo: R01,
             #  verificar observações G025 e G028 do manual cnab 240 febraban.
             remessa = res.content

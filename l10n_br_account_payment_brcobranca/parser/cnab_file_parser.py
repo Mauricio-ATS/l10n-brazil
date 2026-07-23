@@ -199,6 +199,9 @@ class CNABFileParser(FileParser):
                 # continue
                 continue
 
+            if linha_cnab["codigo_ocorrencia"] not in ["06", "28"]:
+                continue
+
             valor_titulo = self.cnab_str_to_float(linha_cnab["valor_titulo"])
 
             zeros_date, date_format = self._get_date_format(bank_name_brcobranca)
@@ -312,6 +315,8 @@ class CNABFileParser(FileParser):
                 #  para informa-lo como nos outros casos.
                 if cod_ocorrencia == "02":
                     account_move_line.cnab_state = "accepted"
+                elif cod_ocorrencia == "10":
+                    account_move_line.cnab_state = "added_paid"
                 elif cod_ocorrencia == "03":
                     # TODO - algo a mais a ser feito ?
                     account_move_line.cnab_state = "not_accepted"
@@ -440,13 +445,16 @@ class CNABFileParser(FileParser):
         zeros_date, date_format = self._get_date_format(bank_name_brcobranca)
         data_ocorrencia = self._get_occurrence_date(linha_cnab, date_format, zeros_date)
         if linha_cnab["data_credito"] == zeros_date or not linha_cnab["data_credito"]:
-            data_credito = linha_cnab["data_credito"]
+            # 13/05/2026 Carlos
+            # alterei aqui pq retorno de pedido de baixa nao vem data_credito
+            data_credito = linha_cnab["data_ocorrencia"]
         else:
-            data_credito = datetime.datetime.strptime(
-                str(linha_cnab["data_credito"]), date_format
-            ).date()
+            data_credito = str(linha_cnab["data_credito"])
         if not data_credito or data_credito == zeros_date:
             data_credito = data_ocorrencia
+
+        data_credito = datetime.datetime.strptime(data_credito, date_format).date()
+
         cnab_config = account_move_line.payment_mode_id.cnab_config_id
         # Na própria lib o desconto é tratado com duas keys diferentes
         # dependendo do banco e do formato. Também há um erro de escrita que foi tratado

@@ -84,6 +84,13 @@ class AccountMove(models.Model):
                         5
                     ) or payment.own_number == str(boleto["nosso_numero"]):
                         payment.write({"own_number": nosso_numero})
+                        linha.write(
+                            {
+                                "own_number_without_zfill": nosso_numero.replace(
+                                    "/", ""
+                                ).replace("-", "")
+                            }
+                        )
 
     def _get_brcobranca_boleto(self, boletos):
         content = json.dumps(boletos)
